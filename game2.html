@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    text-align:center;
+    font-family:sans-serif;
+    background:#e0f7fa;
+  }
+
+  #grid {
+    display:grid;
+    grid-template-columns: repeat(4, 80px);
+    gap:10px;
+    justify-content:center;
+    margin-top:20px;
+  }
+
+  .card {
+    width:80px;
+    height:80px;
+    font-size:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#4CAF50;
+    color:transparent;
+    border-radius:12px;
+  }
+
+  .open {
+    background:#fff;
+    color:#000;
+  }
+
+  .correct {
+    background:#ffd700;
+  }
+</style>
+</head>
+<body>
+
+<h2>かくれたすうじをさがそう！</h2>
+<p>つぎは: <span id="next">1</span></p>
+
+<div id="grid"></div>
+
+<script>
+let current = 1;
+const max = 10;
+let values = [];
+
+// 音
+function sound(freq, time=0.1){
+  const ac = new AudioContext();
+  const o = ac.createOscillator();
+  o.frequency.value = freq;
+  o.connect(ac.destination);
+  o.start();
+  o.stop(ac.currentTime + time);
+}
+
+function ok(){ sound(800); }
+function ng(){ sound(200,0.2); }
+function clear(){
+  sound(600);
+  setTimeout(()=>sound(800),100);
+  setTimeout(()=>sound(1000),200);
+}
+
+// シャッフル
+function shuffle(a){
+  return a.sort(()=>Math.random()-0.5);
+}
+
+// 初期化
+function init(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  current = 1;
+  document.getElementById("next").textContent = current;
+
+  values = [];
+  for(let i=1;i<=max;i++) values.push(i);
+  values = shuffle(values);
+
+  values.forEach(num=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.textContent = num;
+
+    div.onclick = ()=>{
+      div.classList.add("open");
+
+      if(num === current){
+        ok();
+        div.classList.add("correct");
+        current++;
+        document.getElementById("next").textContent = current;
+
+        if(current > max){
+          clear();
+          setTimeout(()=>{
+            alert("クリア！すごい！🎉");
+            init();
+          },300);
+        }
+
+      } else {
+        ng();
+        setTimeout(()=>{
+          div.classList.remove("open");
+        },300);
+      }
+    };
+
+    grid.appendChild(div);
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>
