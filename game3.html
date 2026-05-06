@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    text-align:center;
+    font-family:sans-serif;
+    background:#d0f0c0;
+  }
+
+  #grid {
+    display:grid;
+    grid-template-columns: repeat(4, 80px);
+    gap:10px;
+    justify-content:center;
+    margin-top:20px;
+  }
+
+  .card {
+    width:80px;
+    height:80px;
+    position:relative;
+    font-size:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:#fff;
+  }
+
+  /* うっすら見える数字 */
+  .hiddenNumber {
+    opacity:0.2;
+  }
+
+  /* 見つけたらはっきり */
+  .open .hiddenNumber {
+    opacity:1;
+  }
+
+  /* 正解 */
+  .correct {
+    background:#ffd700;
+  }
+
+  /* 障害物 */
+  .cover {
+    position:absolute;
+    font-size:40px;
+  }
+</style>
+</head>
+<body>
+
+<h2>かくれたすうじをさがそう！</h2>
+<p>つぎは: <span id="next">1</span></p>
+
+<div id="grid"></div>
+
+<script>
+let current = 1;
+const max = 10;
+
+// 音
+function sound(freq, time=0.1){
+  const ac = new AudioContext();
+  const o = ac.createOscillator();
+  o.frequency.value = freq;
+  o.connect(ac.destination);
+  o.start();
+  o.stop(ac.currentTime + time);
+}
+
+function ok(){ sound(800); }
+function ng(){ sound(200,0.2); }
+function clear(){
+  sound(600);
+  setTimeout(()=>sound(800),100);
+  setTimeout(()=>sound(1000),200);
+}
+
+// シャッフル
+function shuffle(a){
+  return a.sort(()=>Math.random()-0.5);
+}
+
+// ランダム障害物
+function randomCover(){
+  const covers = ["🌿","🌳","📦","🪨"];
+  return covers[Math.floor(Math.random()*covers.length)];
+}
+
+// 初期化
+function init(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  current = 1;
+  document.getElementById("next").textContent = current;
+
+  let nums = [];
+  for(let i=1;i<=max;i++) nums.push(i);
+  nums = shuffle(nums);
+
+  nums.forEach(num=>{
+    const div = document.createElement("div");
+    div.className = "card";
+
+    const number = document.createElement("div");
+    number.className = "hiddenNumber";
+    number.textContent = num;
+
+    const cover = document.createElement("div");
+    cover.className = "cover";
+    cover.textContent = randomCover();
+    cover.style.left = Math.random()*30 + "px";
+    cover.style.top = Math.random()*30 + "px";
+
+    div.appendChild(number);
+    div.appendChild(cover);
+
+    div.onclick = ()=>{
+      div.classList.add("open");
+
+      if(num === current){
+        ok();
+        div.classList.add("correct");
+        cover.style.display = "none";
+        current++;
+        document.getElementById("next").textContent = current;
+
+        if(current > max){
+          clear();
+          setTimeout(()=>{
+            alert("クリア！🎉");
+            init();
+          },300);
+        }
+
+      } else {
+        ng();
+        setTimeout(()=>{
+          div.classList.remove("open");
+        },300);
+      }
+    };
+
+    grid.appendChild(div);
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>

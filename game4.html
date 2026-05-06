@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    text-align:center;
+    font-family:sans-serif;
+    background:#fff3cd;
+  }
+
+  h2 { font-size:24px; }
+
+  #enemy {
+    font-size:80px;
+    margin:20px;
+  }
+
+  .buttons {
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:20px;
+  }
+
+  .btn {
+    font-size:40px;
+    padding:20px;
+    border-radius:15px;
+    background:#4CAF50;
+  }
+
+  #result {
+    font-size:22px;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<h2>かてるてをえらぼう！</h2>
+
+<div id="enemy">✊</div>
+
+<div class="buttons">
+  <div class="btn" onclick="play('✊')">✊</div>
+  <div class="btn" onclick="play('✌️')">✌️</div>
+  <div class="btn" onclick="play('✋')">✋</div>
+</div>
+
+<p id="result"></p>
+<p>れんぞくせいかい: <span id="streak">0</span></p>
+
+<script>
+const hands = ["✊","✌️","✋"];
+let enemy = "";
+let streak = 0;
+
+// 音
+function sound(freq, time=0.1){
+  const ac = new AudioContext();
+  const o = ac.createOscillator();
+  o.frequency.value = freq;
+  o.connect(ac.destination);
+  o.start();
+  o.stop(ac.currentTime + time);
+}
+
+function ok(){ sound(800); }
+function ng(){ sound(200,0.2); }
+function winSound(){
+  sound(600);
+  setTimeout(()=>sound(900),100);
+}
+
+// 相手を決める
+function next(){
+  enemy = hands[Math.floor(Math.random()*3)];
+  document.getElementById("enemy").textContent = enemy;
+  document.getElementById("result").textContent = "";
+}
+
+// 勝ち判定
+function isWin(player, enemy){
+  return (
+    (player==="✊" && enemy==="✌️") ||
+    (player==="✌️" && enemy==="✋") ||
+    (player==="✋" && enemy==="✊")
+  );
+}
+
+function play(player){
+  if(isWin(player, enemy)){
+    ok();
+    streak++;
+    document.getElementById("result").textContent = "せいかい！✨";
+  } else {
+    ng();
+    streak = 0;
+    document.getElementById("result").textContent = "ちがうよ！";
+  }
+
+  document.getElementById("streak").textContent = streak;
+
+  // 3連続でごほうび
+  if(streak === 3){
+    winSound();
+    setTimeout(()=>{
+      alert("すごい！3れんぞく！🎉");
+    },200);
+  }
+
+  setTimeout(next, 800);
+}
+
+// 初期
+next();
+</script>
+
+</body>
+</html>
